@@ -40,9 +40,46 @@ def solve_captcha(driver):
     # Process the extracted CAPTCHA text
     captcha_text = extracted_text[0]
     captcha_text = "".join(captcha_text.split(" ")).upper()  # Remove spaces and convert to uppercase
-    captcha_text = captcha_text.replace("$", "S").replace("€", "E") # Replace ambiguous characters
+    captcha_text = captcha_text.replace("$", "S").replace("€", "E").replace(")", "J") # Replace ambiguous characters
 
     return captcha_text
+
+def renameMostRecentFile(
+    new_name: str,
+    directory: str,
+ 
+):
+    """
+    Method to rename the most recent file in the specified directory.
+
+    Input:
+        new_name (str): The new name for the file.
+        directory (str): The directory where the file is located.
+        dataClass (scrapped_data, optional): The data class structure. Defaults to scrapped_data.
+
+    Output:
+        None
+    """
+    try:
+        # Get list of files in the directory sorted by creation time
+        files = sorted(os.listdir(directory), key=lambda x: os.path.getctime(os.path.join(directory, x)))
+        
+        if files:  # Check if there are any files in the directory
+            most_recent_file = files[-1]  # Get the most recent file
+            old_path = os.path.join(directory, most_recent_file)
+            new_path = os.path.join(directory, f'{new_name}')
+            print(f"OLD PATH:{old_path}")
+            print(f"new_path{new_path}")
+            os.rename(old_path, new_path)
+            print(f"File '{most_recent_file}' renamed to '{new_name}' successfully.")
+
+        else:
+            print(f"No files found in directory '{directory}'.")
+    except FileNotFoundError:
+        print(f"Error: Directory '{directory}' not found.")
+    except FileExistsError:
+        print(f"Error: File '{new_name}' already exists.")
+    return new_path
 
 def search_and_download_excel(driver, company_name, download_dir):
     print(f"Downloading Excel file to directory: {download_dir}")
@@ -51,7 +88,7 @@ def search_and_download_excel(driver, company_name, download_dir):
     time.sleep(2)
 
     os.makedirs(download_dir, exist_ok=True)
-    file_name = os.path.join(download_dir, f"{company_name.replace(' ', '_')}.xls")
+    file_name = os.path.join(download_dir, f"{company_name.replace(' ', '_')}.xlsx")
 
     if os.path.exists(file_name):
         return file_name
@@ -80,5 +117,8 @@ def search_and_download_excel(driver, company_name, download_dir):
             retry = False
         except TimeoutException:
             print("Invalid CAPTCHA or Excel button not clickable. Retrying...")
-
-    return file_name
+    print(f"download_dir-{download_dir}")
+    print(f"file_name-{file_name}") 
+    renamed_file = renameMostRecentFile(file_name, download_dir)
+    print(f"renamed_file-{renamed_file}")
+    return renamed_file   

@@ -3,6 +3,7 @@ import glob
 import os
 from django.shortcuts import render
 from nanodjango import Django
+import openpyxl
 from scrapper import setup_driver, search_and_download_excel
 from db_func import read_excel_file, create_or_connect_database, write_to_table
 
@@ -73,7 +74,9 @@ def search(request):
         # Step 1: Initialize the driver and download the file
         driver = setup_driver(download_dir)
         file_path = search_and_download_excel(driver, company_name, download_dir)
-
+        print("file_path", file_path)
+        workbook = openpyxl.load_workbook(file_path)
+        print("workbook", workbook)
         # Step 2: Ensure the file exists or fetch the latest one
         if not os.path.exists(file_path):
             file_path = get_latest_file(download_dir, "*.xlsx")

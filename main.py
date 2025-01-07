@@ -3,10 +3,10 @@ import glob
 import os
 from django.shortcuts import render
 from nanodjango import Django
-import openpyxl
+import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
 from db_func import read_excel_file, create_or_connect_database, write_to_table
-
+from checker import check_excel_file
 # Initialize NanoDjango
 app = Django(
     DATABASES={
@@ -74,9 +74,10 @@ def search(request):
         # Step 1: Initialize the driver and download the file
         driver = setup_driver(download_dir)
         file_path = search_and_download_excel(driver, company_name, download_dir)
-        print("file_path", file_path)
-        workbook = openpyxl.load_workbook(file_path)
-        print("workbook", workbook)
+        print("file_path just before df", file_path )
+        check_excel_file(file_path) 
+        df=pd.read_excel(file_path)
+        print("workbook", df.head())
         # Step 2: Ensure the file exists or fetch the latest one
         if not os.path.exists(file_path):
             file_path = get_latest_file(download_dir, "*.xlsx")

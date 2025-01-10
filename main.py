@@ -5,8 +5,9 @@ from django.shortcuts import render
 from nanodjango import Django
 import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
-from db_func import read_excel_file, create_or_connect_database, write_to_table
+from db_func import read_csv_file, create_or_connect_database, write_to_table
 from checker import check_excel_file
+
 # Initialize NanoDjango
 app = Django(
     DATABASES={
@@ -44,7 +45,7 @@ app = Django(
     STATIC_URL='/static/',
 )
 
-def get_latest_file(directory, extension="*.xlsx"):
+def get_latest_file(directory, extension="*.csv"):
     """Get the most recently modified file in a directory."""
     files = glob.glob(os.path.join(directory, extension))
     if not files:
@@ -74,20 +75,21 @@ def search(request):
         # Step 1: Initialize the driver and download the file
         driver = setup_driver(download_dir)
         file_path = search_and_download_excel(driver, company_name, download_dir)
-        print("file_path just before df", file_path )
-        check_excel_file(file_path) 
-        df=pd.read_excel(file_path)
+        print("file_path just before df", file_path)
+        check_excel_file(file_path)
+        df = pd.read_csv(file_path)
         print("workbook", df.head())
+        print("file_path just before df", file_path)
         # Step 2: Ensure the file exists or fetch the latest one
         if not os.path.exists(file_path):
-            file_path = get_latest_file(download_dir, "*.xlsx")
+            file_path = get_latest_file(download_dir, "*.csv")
             if not file_path:
-                return render(request, "home.html", {"error": "No valid Excel file found.", "success": False})
+                return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
 
-        # Step 3: Read the downloaded Excel file
-        df = read_excel_file(file_path)
+        # Step 3: Read the downloaded CSV file
+        df = pd.read_csv(file_path)
         if df is None:
-            return render(request, "home.html", {"error": "Failed to read the downloaded Excel file.", "success": False})
+            return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
 
         # Step 4: Connect to the SQLite database
         conn = create_or_connect_database("pf_tracker.db")

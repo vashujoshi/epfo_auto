@@ -10,12 +10,12 @@ from PIL import Image
 from io import BytesIO
 import easyocr
 import time
-from db_func import read_excel_file, create_or_connect_database, write_to_table  # Import functions from Backfunc.py
-
+import pandas as pd
+from xlsx2csv import Xlsx2csv
+from db_func import read_csv_fileeate_or_connect_database, write_to_table  # Import functions from Backfunc.py
 
 # URL for EPFO search page
 EPFO_SEARCH_URL = "https://unifiedportal-emp.epfindia.gov.in/publicPortal/no-auth/misReport/home/loadEstSearchHome"
-
 
 def setup_driver(download_dir):
     """Set up the Selenium WebDriver with download directory options."""
@@ -24,7 +24,6 @@ def setup_driver(download_dir):
     options.add_experimental_option("prefs", prefs)
     driver = webdriver.Chrome(options=options)
     return driver
-
 
 def solve_captcha(driver):
     """Solve CAPTCHA using EasyOCR."""
@@ -44,21 +43,16 @@ def solve_captcha(driver):
 
     return captcha_text
 
-def renameMostRecentFile(
-    new_name: str,
-    directory: str,
- 
-):
+def renameMostRecentFile(new_name: str, directory: str):
     """
     Method to rename the most recent file in the specified directory.
 
     Input:
         new_name (str): The new name for the file.
         directory (str): The directory where the file is located.
-        dataClass (scrapped_data, optional): The data class structure. Defaults to scrapped_data.
 
     Output:
-        None
+        str: The new file path.
     """
     try:
         # Get list of files in the directory sorted by creation time
@@ -67,19 +61,39 @@ def renameMostRecentFile(
         if files:  # Check if there are any files in the directory
             most_recent_file = files[-1]  # Get the most recent file
             old_path = os.path.join(directory, most_recent_file)
-            new_path = os.path.join(directory, f'{new_name}')
+            new_path = os.path.join(directory, f'{new_name}.csv')
             print(f"OLD PATH:{old_path}")
-            print(f"new_path{new_path}")
-            os.rename(old_path, new_path)
-            print(f"File '{most_recent_file}' renamed to '{new_name}' successfully.")
-
+            print(f"new_path:{new_path}")
+            Xlsx2csv(old_path, outputencoding="utf-8").convert(new_path)
+            os.remove(old_path)
+            print(f"File '{most_recent_file}' converted to '{new_name}.csv' successfully.")
+            return new_path
         else:
             print(f"No files found in directory '{directory}'.")
+            return None
     except FileNotFoundError:
         print(f"Error: Directory '{directory}' not found.")
+        return None
     except FileExistsError:
-        print(f"Error: File '{new_name}' already exists.")
-    return new_path
+        print(f"Error: File '{new_name}.csv' already exists.")
+        return None
+
+def read_csv_with_fallback(file_path):
+    """
+    Read a CSV file.
+
+    Input:
+        file_path (str): The path to the CSV file.
+
+    Output:
+        pd.DataFrame: The data read from the file.
+    """
+    try:
+        df = pd.read_csv(file_path)
+    except Exception as e:
+        print(f"Failed to read CSV file: {e}.")
+        df = None
+    return df
 
 def search_and_download_excel(driver, company_name, download_dir):
     print(f"Downloading Excel file to directory: {download_dir}")
@@ -119,6 +133,18 @@ def search_and_download_excel(driver, company_name, download_dir):
             print("Invalid CAPTCHA or Excel button not clickable. Retrying...")
     print(f"download_dir-{download_dir}")
     print(f"file_name-{file_name}") 
-    renamed_file = renameMostRecentFile(file_name, download_dir)
+    renamed_file = renameMostRecentFile(company_name.replace(' ', '_'), download_dir)
     print(f"renamed_file-{renamed_file}")
-    return renamed_file   
+    return renamed_file
+
+if __name__ == "__main__":
+    download_dir = os.path.join(os.getcwd(), "CompanyList")
+    company_name = "AXIS BANK"
+    driver = setup_driver(download_dir)
+    try:
+        file_path = search_and_download_excel(driver, company_name, download_dir)
+        print(f"Downloaded file path: {file_path}")
+        df = read_csv_with_fallback(file_path)
+        print(df.head())
+    finally:
+        driver.quit()

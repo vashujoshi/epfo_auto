@@ -16,7 +16,7 @@ def check_excel_file(file_path):
             csv_file_path = file_path.replace(".xlsx", ".csv")
             Xlsx2csv(file_path, outputencoding="utf-8").convert(csv_file_path)
             df = pd.read_csv(csv_file_path)
-            print("File loaded successfully as CSV!")
+            print("File loaded successfully as CSV yeah !")
             print("Preview of the file:")
             print(df.head())
             return "The file is valid and was read as CSV."

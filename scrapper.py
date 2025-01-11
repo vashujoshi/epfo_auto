@@ -12,7 +12,7 @@ import easyocr
 import time
 import pandas as pd
 from xlsx2csv import Xlsx2csv
-from db_func import read_csv_fileeate_or_connect_database, write_to_table  # Import functions from Backfunc.py
+from db_func import read_csv_file, create_or_connect_database, write_to_table  # Import functions from Backfunc.py
 
 # URL for EPFO search page
 EPFO_SEARCH_URL = "https://unifiedportal-emp.epfindia.gov.in/publicPortal/no-auth/misReport/home/loadEstSearchHome"

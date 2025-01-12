@@ -7,7 +7,11 @@ import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
 from db_func import read_csv_file, create_or_connect_database, write_to_table
 from checker import check_excel_file
+import pandas as pd
+import sqlite3
+from xlsx2csv import Xlsx2csv
 
+company_name = ""
 # Initialize NanoDjango
 app = Django(
     DATABASES={
@@ -59,6 +63,7 @@ def home(request):
 @app.route("/search")
 def search(request):
     """Handle the search, scrape data, and store it in the database."""
+    global company_name
     if "company_name" not in request.GET:
         return render(request, "home.html", {"error": "Please enter a company name.", "success": False})
 
@@ -102,12 +107,37 @@ def search(request):
         # Close the database connection
         conn.close()
 
+        # Insert the data into the database
+        insert_to_db()
+    
         return render(request, "home.html", {"success": True, "file_path": file_path})
     except Exception as e:
         return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
     finally:
         if driver:
             driver.quit()  # Safely quit the driver
+
+
+def insert_to_db():
+    try:
+        sqliteConnection = sqlite3.connect('sql.db')
+        cursor = sqliteConnection.cursor()
+
+        # Read CSV file into a pandas DataFrame
+        extn = '.csv'
+        filename = company_name + extn
+        download_path = r"C:\Users\Jai Mata di\Desktop\allprograms\automate\CompanyList\\"
+        df = pd.read_csv(download_path + filename)
+        df.to_sql('company_details', sqliteConnection, if_exists='append', index=False)
+
+        # Commit the changes
+        sqliteConnection.commit()
+
+        # Close the connection
+        sqliteConnection.close()
+    except Exception as e:
+            print(f"Error: {e}")
+            return f"The file is corrupted or invalid. Error: {e}"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0:8004")

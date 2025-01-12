@@ -137,14 +137,5 @@ def search_and_download_excel(driver, company_name, download_dir):
     print(f"renamed_file-{renamed_file}")
     return renamed_file
 
-if __name__ == "__main__":
-    download_dir = os.path.join(os.getcwd(), "CompanyList")
-    company_name = "AXIS BANK"
-    driver = setup_driver(download_dir)
-    try:
-        file_path = search_and_download_excel(driver, company_name, download_dir)
-        print(f"Downloaded file path: {file_path}")
-        df = read_csv_with_fallback(file_path)
-        print(df.head())
-    finally:
-        driver.quit()
+
+    

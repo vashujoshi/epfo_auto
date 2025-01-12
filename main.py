@@ -1,11 +1,11 @@
 import time
 import glob
 import os
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from nanodjango import Django
 import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
-from db_func import read_csv_file, create_or_connect_database, write_to_table
+from db_func import  create_or_connect_database, write_to_table
 from checker import check_excel_file
 import pandas as pd
 import sqlite3
@@ -106,9 +106,6 @@ def search(request):
 
         # Close the database connection
         conn.close()
-
-        # Insert the data into the database
-        insert_to_db()
     
         return render(request, "home.html", {"success": True, "file_path": file_path})
     except Exception as e:
@@ -117,27 +114,32 @@ def search(request):
         if driver:
             driver.quit()  # Safely quit the driver
 
+@app.route("/show_table")
+def show_table(request):
+    """Display the table with checkboxes and handle form submissions."""
+    if request.method == "POST":
+        selected_companies = request.POST.getlist("selected_companies")
+        selected_data = []
+        conn = create_or_connect_database("pf_tracker.db")
+        cursor = conn.cursor()
+        for est_id in selected_companies:
+            cursor.execute("SELECT establishment_name FROM company_data WHERE establishment_id=?", (est_id,))
+            est_name = cursor.fetchone()[0]
+            selected_data.append({"establishment_id": est_id, "establishment_name": est_name})
+        conn.close()
+        print("Selected companies:", selected_data)
+        return redirect("/")
 
-def insert_to_db():
-    try:
-        sqliteConnection = sqlite3.connect('sql.db')
-        cursor = sqliteConnection.cursor()
+    # Read the DataFrame from `company_data` table
+    conn = create_or_connect_database("pf_tracker.db")
+    df = pd.read_sql_query("SELECT * FROM company_data", conn)
+    conn.close()
 
-        # Read CSV file into a pandas DataFrame
-        extn = '.csv'
-        filename = company_name + extn
-        download_path = r"C:\Users\Jai Mata di\Desktop\allprograms\automate\CompanyList\\"
-        df = pd.read_csv(download_path + filename)
-        df.to_sql('company_details', sqliteConnection, if_exists='append', index=False)
+    # Convert DataFrame rows to a list of lists and column names to a list
+    data = df.values.tolist()  # Each row as a list
+    columns = df.columns.tolist()  # List of column names
 
-        # Commit the changes
-        sqliteConnection.commit()
-
-        # Close the connection
-        sqliteConnection.close()
-    except Exception as e:
-            print(f"Error: {e}")
-            return f"The file is corrupted or invalid. Error: {e}"
+    return render(request, "show_table.html", {"data": data, "columns": columns})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0:8004")

@@ -5,16 +5,24 @@
 </head>
 <body>
     <h1>Search for a Company</h1>
+
     {% if error %}
         <p style="color: red;">{{ error }}</p>
     {% endif %}
+
     {% if success %}
         <p style="color: green;">File downloaded successfully: {{ file_path }}</p>
     {% endif %}
+
     <form action="/search" method="get">
         <label for="company_name">Company Name:</label>
         <input type="text" id="company_name" name="company_name" required>
         <button type="submit">Search</button>
     </form>
+
+    <br>
+    {% if show_table_link %}
+        <a href="/show_table">View Company Data</a>
+    {% endif %}
 </body>
 </html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Data</title>
+</head>
+<body>
+    <h1>Company Data</h1>
+    <form method="post" action="/show_table">
+        {% csrf_token %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    {% for col in columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="selected_companies" value="{{ row.0 }}">
+                        </td>
+                        {% for col in row %}
+                            <td>{{ col }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

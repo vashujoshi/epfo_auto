@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from nanodjango import Django
 import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
-from db_func import  create_or_connect_database, write_to_table
+from db_func import  create_or_connect_database, write_to_table,read_csv_file
 from checker import check_excel_file
 import pandas as pd
 import sqlite3
@@ -92,7 +92,7 @@ def search(request):
                 return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
 
         # Step 3: Read the downloaded CSV file
-        df = pd.read_csv(file_path)
+        df = read_csv_file(file_path)
         if df is None:
             return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
 

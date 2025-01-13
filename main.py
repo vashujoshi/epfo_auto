@@ -107,7 +107,7 @@ def search(request):
         # Close the database connection
         conn.close()
     
-        return render(request, "home.html", {"success": True, "file_path": file_path})
+        return render(request, "home.html", {"success": True, "show_table_link": True})
     except Exception as e:
         return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
     finally:

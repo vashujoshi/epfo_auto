@@ -17,7 +17,7 @@ app = Django(
     DATABASES={
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'pf_tracker.db',
+            'NAME': 'company_pf_details.db',
         }
     },
     INSTALLED_APPS=[
@@ -97,7 +97,7 @@ def search(request):
             return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
 
         # Step 4: Connect to the SQLite database
-        conn = create_or_connect_database("pf_tracker.db")
+        conn = create_or_connect_database("company_pf_details.db")
         if conn is None:
             return render(request, "home.html", {"error": "Database connection failed.", "success": False})
 
@@ -120,7 +120,7 @@ def show_table(request):
     if request.method == "POST":
         selected_companies = request.POST.getlist("selected_companies")
         selected_data = []
-        conn = create_or_connect_database("pf_tracker.db")
+        conn = create_or_connect_database("company_pf_details.db")
         cursor = conn.cursor()
         for est_id in selected_companies:
             cursor.execute("SELECT establishment_name FROM company_data WHERE establishment_id=?", (est_id,))
@@ -131,7 +131,7 @@ def show_table(request):
         return redirect("/")
 
     # Read the DataFrame from `company_data` table
-    conn = create_or_connect_database("pf_tracker.db")
+    conn = create_or_connect_database("company_pf_details.db")
     df = pd.read_sql_query("SELECT * FROM company_data", conn)
     conn.close()
 

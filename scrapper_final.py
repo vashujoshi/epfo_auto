@@ -143,7 +143,7 @@ class epfs_scraper:
             value= "Search"
         ).click()
 
-        time.sleep(10)
+        time.sleep(5)
 
         return driver
 
@@ -194,7 +194,7 @@ class epfs_scraper:
         
         print("Passed Captcha")
 
-        time.sleep(8)
+        time.sleep(4)
 
         return driver
 
@@ -225,28 +225,23 @@ class epfs_scraper:
                 )
             )
         
-        time.sleep(10)
+        time.sleep(5)
 
         return driver
     
-    def renameMostRecentFile(
-            self,
-            new_name: str,
-            directory: str,
-            dataClass: scrapped_data = scrapped_data
-        ):
+    def renameMostRecentFile(self, new_name: str, directory: str):
         """
         Method to rename the most recent file in the specified directory.
         
         Input:
             new_name (str): The new name for the file.
             directory (str): The directory where the file is located.
-            dataClass (scrapped_data, optional): The data class structure. Defaults to scrapped_data.
         
         Output:
             None
         """
         try:
+            new_name= new_name.replace(" ", "_")
             # Get list of files in the directory sorted by creation time
             files = sorted(os.listdir(directory), key=lambda x: os.path.getctime(os.path.join(directory, x)))
             
@@ -257,7 +252,6 @@ class epfs_scraper:
                 
                 os.rename(old_path, new_path)
                 print(f"File '{most_recent_file}' renamed to '{new_name}.xlsx' successfully.")
-
             else:
                 print(f"No files found in directory '{directory}'.")
         except FileNotFoundError:
@@ -265,16 +259,13 @@ class epfs_scraper:
         except FileExistsError:
             print(f"Error: File '{new_name}' already exists.")
 
-    def _downloadFile(
-            self,
-            driver: webdriver.Chrome,
-            rename: bool= True
-    ) -> webdriver.Chrome:
+    def _downloadFile(self, driver: webdriver.Chrome, company_name: str, rename: bool = True) -> webdriver.Chrome:
         """
         Method to download a file.
         
         Input:
             driver (webdriver.Chrome): The Selenium WebDriver instance.
+            company_name (str): The name of the company.
             rename (bool, optional): Whether to rename the downloaded file. Defaults to True.
         
         Output:
@@ -282,16 +273,10 @@ class epfs_scraper:
         """
         
         # Find Details
-        details = driver.find_elements(
-            by= By.XPATH,
-            value= '//*[@id="example"]/tbody/tr/td[5]/a[1]'
-        )
+        details = driver.find_elements(By.XPATH, '//*[@id="example"]/tbody/tr/td[5]/a[1]')
 
         # Establishment Name
-        est_name = driver.find_elements(
-            by= By.XPATH,
-            value= '//*[@id="example"]/tbody/tr/td[1]'
-        )
+        est_name = driver.find_elements(By.XPATH, '//*[@id="example"]/tbody/tr/td[1]')
         
         for i, detail in enumerate(details[0:3:10]):
             
@@ -308,9 +293,9 @@ class epfs_scraper:
                 print("Success!")
             
             print(est_name[i].text)
-            download_filename = est_name[i].text
+            download_filename = company_name  # Use company_name for renaming
 
-            time.sleep(10)
+            time.sleep(5)
 
             print("Find element")
             
@@ -321,29 +306,23 @@ class epfs_scraper:
 
             # Retry if new window didn't open
             while len(all_handles) == 1:
-
                 driver = self._findElement(driver)
-
-                # Get handles of all currently open windows/tabs
                 all_handles = driver.window_handles
-
 
             # Switch to the newly opened window/tab
             new_window_handle = [handle for handle in all_handles if handle != driver.current_window_handle][0]
             driver.switch_to.window(new_window_handle)
-
-            time.sleep(5)
+            
+            # add for future download issues
+            time.sleep(10)
 
             try:
-
-                excel_file = driver.find_element(
-                    by= By.CSS_SELECTOR,
-                    value= "#table_pop_up_wrapper > div.dt-buttons > a"
-                )
+                excel_file = driver.find_element(By.CSS_SELECTOR, "#table_pop_up_wrapper > div.dt-buttons > a")
                 excel_file.click()
                 if rename:
-                    self.renameMostRecentFile(new_name= download_filename, directory= self.__DOWNLOAD_DIR)
-
+                    print("Renaming file...")
+                    self.renameMostRecentFile(new_name=download_filename, directory=self.__DOWNLOAD_DIR)
+                
             except NoSuchElementException:
                 print("Record doesn't exist!")
 
@@ -418,9 +397,9 @@ class epfs_scraper:
 
             while current_page <= total_pages:
                               
-                driver = self._downloadFile(driver= driver, rename= rename)
+                driver = self._downloadFile(driver= driver, company_name= company_name, rename= rename)
 
-                time.sleep(5)
+                time.sleep(3)
             
                 driver.find_element(
                         by= By.XPATH,
@@ -450,7 +429,7 @@ class epfs_scraper:
         Output:
             None
         """
-        
+        print(f"Scraping data for {company_name} (ID: {est_id}, Rename: {rename})")
         if isinstance(company_name, str):
             print("string", company_name)
             self._scrapePage(company_name, est_id, rename)
@@ -482,7 +461,7 @@ def test_scrape_data():
     print("All tests passed!")
 
 def main():
-    epfs_scraper().scrape_data(company_name="Axis bank", est_id="MHBAN0045239000", rename=True)
+    epfs_scraper().scrape_data(company_name="TATA MOTORS BODY SOLUTIONS LIMITED", est_id="GBHBL0050184000", rename=True)
     test_scrape_data()
 
 if __name__ == "__main__":

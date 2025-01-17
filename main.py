@@ -5,12 +5,12 @@ from django.shortcuts import render, redirect
 from nanodjango import Django
 import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
-from db_func import read_csv_file, create_or_connect_database, write_to_table
+from scrapper_final import epfs_scraper
+from db_func import read_csv_file, create_or_connect_database, write_to_table,read_csv_file2
 from checker import check_excel_file
 import pandas as pd
 import sqlite3
 from xlsx2csv import Xlsx2csv
-from scrapper_final import epfs_scraper
 
 company_name = ""
 # Initialize NanoDjango
@@ -122,6 +122,7 @@ def show_table(request):
         selected_companies = request.POST.getlist("selected_companies")
         selected_data = []
         conn = create_or_connect_database("company_pf_details.db")
+        print("selected_companies", selected_companies)
         cursor = conn.cursor()
         for est_id in selected_companies:
             cursor.execute("SELECT establishment_name FROM company_data WHERE establishment_id=?", (est_id,))
@@ -132,43 +133,56 @@ def show_table(request):
         # Pass the selected companies to the final scraper
         for data in selected_data:
             epfs_scraper().scrape_data(company_name=data["establishment_name"], est_id=data["establishment_id"], rename=True)
-               
-    # now again save to backend 
-    # this time make a new table with the name of payment_detail in company_pf_details.db which have column name as dataframe name 
-    #     try:
-    #     # Step 1: Initialize the driver and download the file
-    #     driver = setup_driver(download_dir)
-    #     file_path = search_and_download_excel(driver, company_name, download_dir)
-    #     print("file_path just before df", file_path)
-    #     check_excel_file(file_path)
-    #     df = pd.read_csv(file_path)
-    #     print("workbook", df.head())
-    #     print("file_path just before df", file_path)
-    #     # Step 2: Ensure the file exists or fetch the latest one
-    #     if not os.path.exists(file_path):
-    #         file_path = get_latest_file(download_dir, "*.csv")
-    #         if not file_path:
-    #             return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
+            time.sleep(5)
+        print("here0")
+        # Save to backend and create a new table with the name of payment_detail
+        for data in selected_data:
+            company_name = data["establishment_name"]
+            est_id = data["establishment_id"]
+            download_dir2 = os.path.join(os.getcwd(), "data")
+            os.makedirs(download_dir2, exist_ok=True)  # Ensure directory exists
 
-    #     # Step 3: Read the downloaded CSV file
-    #     df = read_csv_file(file_path)
-    #     if df is None:
-    #         return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
+            driver = None
+            try:
+                company_name=company_name.replace(" ","_")
+                file_path2 = f"data/{company_name}.xlsx"
+                check_excel_file(file_path2)
+                file_path2 = file_path2.replace(".xlsx",".csv")
+                print("here1")
+                print(file_path2)
+                df2=read_csv_file2(file_path2)
+                # cant read
+                print("workbook", df2.head())
+                print("here2")
+            
+                # Step 2: Ensure the file exists or fetch the latest one
+                if not os.path.exists(file_path2):
+                    file_path2 = get_latest_file(download_dir2, "*.csv")
+                    if not file_path2:
+                        return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
 
-    #     # Step 4: Connect to the SQLite database
-    #     conn = create_or_connect_database("company_pf_details.db")
-    #     if conn is None:
-    #         return render(request, "home.html", {"error": "Database connection failed.", "success": False})
+                # Step 3: Read the downloaded CSV file
+                df2 = pd.read_csv(file_path2)
+                if df2 is None:
+                    return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
 
-    #     # Step 5: Write the data to the database
-    #     write_to_table(conn, df, "company_data")
+                # Step 4: Connect to the SQLite database
+                conn = create_or_connect_database("company_pf_details.db")
+                if conn is None:
+                    return render(request, "home.html", {"error": "Database connection failed.", "success": False})
 
-    #     # Close the database connection
-    #     conn.close()
+                # Step 5: Write the data to the database
+                write_to_table(conn, df2, "payment_detail")
 
-
-
-        return redirect("/")
+                # Close the database connection
+                conn.close()
+            except Exception as e:
+                return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
+            finally:
+                if driver:
+                    driver.quit()  # Safely quit the driver
+        
+        return redirect("/payment_details")
 
     # Read the DataFrame from `company_data` table
     conn = create_or_connect_database("company_pf_details.db")
@@ -180,6 +194,19 @@ def show_table(request):
     columns = df.columns.tolist()  # List of column names
 
     return render(request, "show_table.html", {"data": data, "columns": columns})
+
+@app.route("/payment_details")
+def payment_details(request):
+    """Display the payment details."""
+    conn = create_or_connect_database("company_pf_details.db")
+    df = pd.read_sql_query("SELECT * FROM payment_detail", conn)
+    conn.close()
+
+    # Convert DataFrame rows to a list of lists and column names to a list
+    data = df.values.tolist()  # Each row as a list
+    columns = df.columns.tolist()  # List of column names
+
+    return render(request, "payment_details.html", {"data": data, "columns": columns})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0:8004")

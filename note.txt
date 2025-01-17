@@ -1,0 +1,2 @@
+tohra ui or header or compact
+auto open local host

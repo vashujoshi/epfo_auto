@@ -314,7 +314,7 @@ class epfs_scraper:
             driver.switch_to.window(new_window_handle)
             
             # add for future download issues
-            time.sleep(10)
+            time.sleep(15)
 
             try:
                 excel_file = driver.find_element(By.CSS_SELECTOR, "#table_pop_up_wrapper > div.dt-buttons > a")

@@ -1,10 +1,16 @@
 import time
 import glob
 import os
+import webbrowser
 from django.shortcuts import render, redirect
 from nanodjango import Django
 import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 from scrapper_final import epfs_scraper
 from db_func import read_csv_file, create_or_connect_database, write_to_table,read_csv_file2
 from checker import check_excel_file
@@ -50,7 +56,7 @@ app = Django(
     ],
     STATIC_URL='/static/',
 )
-print("static",os.path.join(os.getcwd(), 'static'))
+
 def get_latest_file(directory, extension="*.csv"):
     """Get the most recently modified file in a directory."""
     files = glob.glob(os.path.join(directory, extension))
@@ -65,7 +71,6 @@ def home(request):
 @app.route("/search")
 def search(request):
     """Handle the search, scrape data, and store it in the database."""
-    global company_name
     if "company_name" not in request.GET:
         return render(request, "home.html", {"error": "Please enter a company name.", "success": False})
 
@@ -74,41 +79,39 @@ def search(request):
         return render(request, "home.html", {"error": "Company name cannot be empty.", "success": False})
 
     download_dir = os.path.join(os.getcwd(), "CompanyList")
-    print(f"Download directory is: {download_dir}")
     os.makedirs(download_dir, exist_ok=True)  # Ensure directory exists
 
     driver = None
     try:
-        # Step 1: Initialize the driver and download the file
+        # Initialize the driver
         driver = setup_driver(download_dir)
+        
+        # Perform search and download
         file_path = search_and_download_excel(driver, company_name, download_dir)
-        print("file_path just before df", file_path)
-        check_excel_file(file_path)
-        df = pd.read_csv(file_path)
-        print("workbook", df.head())
-        print("file_path just before df", file_path)
-        # Step 2: Ensure the file exists or fetch the latest one
-        if not os.path.exists(file_path):
-            file_path = get_latest_file(download_dir, "*.csv")
-            if not file_path:
-                return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
+        try:
+            error_message_element = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//*//*[contains(text(), "No details found for this criteria. Please enter valid Establishment name or code number .")]'))
+            )
+            if "No details found for this criteria" in error_message_element.text:
+                return render(request, "home.html", {
+                    "error": f"No details found for '{company_name}'. Please try again with a valid name.",
+                    "success": False
+                })
+        except TimeoutException:
+            pass  # No error message found, proceed
 
-        # Step 3: Read the downloaded CSV file
+        # Further processing
+        if not file_path or not os.path.exists(file_path):
+            return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
+
         df = read_csv_file(file_path)
-        if df is None:
-            return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
+        if df is None or df.empty:
+            return render(request, "home.html", {"error": "No records found for the specified company.", "success": False})
 
-        # Step 4: Connect to the SQLite database
         conn = create_or_connect_database("company_pf_details.db")
-        if conn is None:
-            return render(request, "home.html", {"error": "Database connection failed.", "success": False})
-
-        # Step 5: Write the data to the database
         write_to_table(conn, df, "company_data")
-
-        # Close the database connection
         conn.close()
-    
+
         return render(request, "home.html", {"success": True, "show_table_link": True})
     except Exception as e:
         return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
@@ -151,11 +154,12 @@ def show_table(request):
                 file_path2 = file_path2.replace(".xlsx",".csv")
                 print("here1")
                 print(file_path2)
-                df2=read_csv_file2(file_path2)
+                df2 = read_csv_file2(file_path2, company_name)
+                if df2 is None:
+                    return render(request, "home.html", {"error": "No records available for the organization ", "success": False})
                 # cant read
                 print("workbook", df2.head())
                 print("here2")
-            
                 # Step 2: Ensure the file exists or fetch the latest one
                 if not os.path.exists(file_path2):
                     file_path2 = get_latest_file(download_dir2, "*.csv")
@@ -163,7 +167,6 @@ def show_table(request):
                         return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
 
                 # Step 3: Read the downloaded CSV file
-                df2 = pd.read_csv(file_path2)
                 if df2 is None:
                     return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
 
@@ -177,6 +180,14 @@ def show_table(request):
 
                 # Close the database connection
                 conn.close()
+                if os.path.exists(file_path2):
+                    os.remove(file_path2)
+                    print(f"Removed file: {file_path2}")
+                xlsx_file_path = file_path2.replace(".csv", ".xlsx")
+                if os.path.exists(xlsx_file_path):
+                    os.remove(xlsx_file_path)
+                    print(f"Removed file: {xlsx_file_path}")
+
             except Exception as e:
                 return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
             finally:
@@ -210,4 +221,5 @@ def payment_details(request):
     return render(request, "payment_details.html", {"data": data, "columns": columns})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0:8004")
+  webbrowser.open("http://localhost:8004")
+  app.run(host="0.0.0.0:8004")

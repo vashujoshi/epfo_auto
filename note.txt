@@ -1,2 +1,4 @@
 tohra ui or header or compact
 auto open local host
+No details found for this criteria. Please enter valid Establishment name or code number .
+//*[@id="tablecontainer"]/div

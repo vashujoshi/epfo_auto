@@ -7,13 +7,18 @@
 </head>
 <body>
     <h1>Company Data</h1>
-    
+    <div id="scroll-buttons">
+        <button id="scroll-to-bottom">Scroll to Bottom</button>
+    </div>
     <form method="post" action="/show_table">
         {% csrf_token %}
+
         <table border="1">
             <thead>
                 <tr>
-                    <th>Select</th>
+                    <th>
+                        <input type="checkbox" id="select-all" title="Select All">
+                    </th>
                     {% for col in columns %}
                         <th>{{ col }}</th>
                     {% endfor %}
@@ -34,5 +39,28 @@
         </table>
         <button type="submit">Submit</button>
     </form>
+
+    <!-- Scroll Buttons -->
+    <div id="scroll-buttons">
+        <button id="scroll-to-top">Scroll to Top</button>
+    </div>
+
+    <script>
+        // Select All functionality
+        document.getElementById('select-all').addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        });
+
+        // Scroll to Top functionality
+        document.getElementById('scroll-to-top').addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Scroll to Bottom functionality
+        document.getElementById('scroll-to-bottom').addEventListener('click', function () {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+    </script>
 </body>
 </html>

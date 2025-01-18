@@ -35,21 +35,12 @@ def write_to_table(conn, df, table_name):
     except Exception as e:
         print(f"Error writing to table: {e}")
 
-# Main logic
-file_path = 'your_file.csv'  # Change this to your actual file path
-db_name = 'example.db'
-
-df = read_csv_file(file_path)
-if df is not None:
-    conn = create_or_connect_database(db_name)
-    if conn is not None:
-        write_to_table(conn, df, 'company_data')
-
-def read_csv_file2(file_path):
+def read_csv_file2(file_path, company_name):
     try:
         file_path = file_path.replace(" ","\ ")
         df = pd.read_csv(file_path)
-        df.columns=['TRRN','Date Of Credit','Amount','Wage Month','No. of Employee','ECR']
+        df.columns = ['TRRN', 'Date Of Credit', 'Amount', 'Wage Month', 'No. of Employee', 'ECR']
+        df.insert(0, 'Company_Name', company_name)  # Insert company_name as the first column
         return df
     except Exception as e:
         print(f"Error reading CSV file: {e}")

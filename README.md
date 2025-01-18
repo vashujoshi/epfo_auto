@@ -27,17 +27,20 @@ This project is a web application for managing company PF (Provident Fund) detai
 
 ---
 
-### Payment Details
+### Company_name list
 ![Payment Details](https://github.com/user-attachments/assets/10dc3daa-7bf6-424c-8df3-e5732389f19c)
 
 ---
 
 ### Database Integration
-![Database Integration](https://github.com/user-attachments/assets/2ba4d4cb-37bc-4820-add6-6b6b63378379)
+![image](https://github.com/user-attachments/assets/669c818e-40c7-4468-955f-ffbecad3c788)
+![image](https://github.com/user-attachments/assets/9aa8ba86-311b-4787-8ebb-068a4b3b296e)
+
+
 
 ---
 
-### CSV Processing
+### Scrapper_final
 ![CSV Processing](https://github.com/user-attachments/assets/eed30a8a-a3af-43ae-8a8c-cec8fe371cef)
 
 ---
@@ -47,7 +50,7 @@ This project is a web application for managing company PF (Provident Fund) detai
 
 ---
 
-### Error Handling
+### Payment_details
 ![Error Handling](https://github.com/user-attachments/assets/e5e2957c-9f36-465b-8866-01d58b1ae4d3)
 
 

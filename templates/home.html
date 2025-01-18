@@ -1,28 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Search</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'search.css' %}">
+    <script>
+        function searchCompany(companyName) {
+            document.getElementById('company_name').value = companyName;
+            document.getElementById('search-form').submit();
+        }
+    </script>
 </head>
 <body>
-    <h1>Search for a Company</h1>
+    <div class="container">
+        <h1>Search for a Company</h1>
+        <p class="subtitle">Stock analysis and screening tool for investors</p>
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+        <!-- Display error or success messages -->
+        {% if error %}
+            <p class="message error">{{ error }}</p>
+        {% endif %}
 
-    {% if success %}
-        <p style="color: green;">File downloaded successfully: {{ file_path }}</p>
-    {% endif %}
+        {% if success %}
+            <p class="message success">File downloaded successfully: {{ file_path }}</p>
+            <a href="/show_table">View Company List</a>
+        {% endif %}
 
-    <form action="/search" method="get">
-        <label for="company_name">Company Name:</label>
-        <input type="text" id="company_name" name="company_name" required>
-        <button type="submit">Search</button>
-    </form>
+        <!-- Search form -->
+        <form id="search-form" class="search-form" action="/search" method="get">
+            <input type="text" id="company_name" name="company_name" placeholder="Search for a company..." required>
+            <button type="submit">Search</button>
+        </form>
 
-    <br>
-    {% if show_table_link %}
-        <a href="/show_table">View Company Data</a>
-    {% endif %}
+        <!-- Popular companies -->
+        <div class="popular-companies">
+            <h2>Example search:</h2>
+            <a href="javascript:void(0);" onclick="searchCompany('Coastal Corp')">Coastal Corp</a>
+            <a href="javascript:void(0);" onclick="searchCompany('Frontier Springs')">Frontier Springs</a>
+            <a href="javascript:void(0);" onclick="searchCompany('ITD Cem')">ITD Cem</a>
+            <a href="javascript:void(0);" onclick="searchCompany('Krishca Strapp')">Krishca Strapp</a>
+            <a href="javascript:void(0);" onclick="searchCompany('Modison')">Modison</a>
+            <a href="javascript:void(0);" onclick="searchCompany('Permanent Magnet')">Permanent Magnet</a>
+            <a href="javascript:void(0);" onclick="searchCompany('Pix Transmission')">Pix Transmission</a>
+            <a href="javascript:void(0);" onclick="searchCompany('RACL Geartech')">RACL Geartech</a>
+            <a href="javascript:void(0);" onclick="searchCompany('Sandur Manganese')">Sandur Manganese</a>
+            <a href="javascript:void(0);" onclick="searchCompany('Wanbury')">Wanbury</a>
+        </div>
+    </div>
 </body>
 </html>

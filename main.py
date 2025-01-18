@@ -13,6 +13,7 @@ import sqlite3
 from xlsx2csv import Xlsx2csv
 
 company_name = ""
+
 # Initialize NanoDjango
 app = Django(
     DATABASES={
@@ -49,7 +50,7 @@ app = Django(
     ],
     STATIC_URL='/static/',
 )
-
+print("static",os.path.join(os.getcwd(), 'static'))
 def get_latest_file(directory, extension="*.csv"):
     """Get the most recently modified file in a directory."""
     files = glob.glob(os.path.join(directory, extension))

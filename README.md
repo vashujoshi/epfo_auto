@@ -141,11 +141,6 @@ Contributions are welcome! Please follow these steps:
 - **File Not Found Errors**:
   - Ensure directories (`CompanyList`, `data`) are created and accessible.
 
----
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -153,10 +148,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For any issues or suggestions, feel free to reach out:
 
-- **Author**: [Your Name](https://github.com/your-username)
-- **Email**: your.email@example.com
+- **Author**: Vaibhav joshi
+- **Email**: vashu941130@gmail.com
 ```
-
-### Notes:
-1. Replace `your-username`, `Your Name`, and `your.email@example.com` with your actual GitHub username and contact details.
-2. Update the repository link in the `git clone` command.
+.

@@ -1,53 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Search</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'search.css' %}">
-    <script>
-        function searchCompany(companyName) {
-            document.getElementById('company_name').value = companyName;
-            document.getElementById('search-form').submit();
-        }
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h1>Search for a Company</h1>
-        <p class="subtitle">Company pf details</p>
+{% extends "base.html" %}
 
-        <!-- Display error or success messages -->
-        {% if error %}
-            <p class="message error">{{ error }}</p>
-        {% endif %}
+{% block title %}Company Search{% endblock %}
 
-        {% if success %}
-            <p class="message success">File downloaded successfully: {{ file_path }}</p>
-            <a href="/show_table">View Company List</a>
-        {% endif %}
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'search.css' %}">
+{% endblock %}
 
-        <!-- Search form -->
-        <form id="search-form" class="search-form" action="/search" method="get">
-            <input type="text" id="company_name" name="company_name" placeholder="Search for a company..." required>
-            <button type="submit">Search</button>
-        </form>
+{% block content %}
+<div class="container">
+    <h1>Search for a Company</h1>
+    <p class="subtitle">Company pf details</p>
 
-        <!-- Popular companies -->
-        <div class="popular-companies">
-            <h2>Example search:</h2>
-            <a href="javascript:void(0);" onclick="searchCompany('Coastal Corp')">Coastal Corp</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Google')">Google</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Amazon')">Amazon</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Microsoft')">Microsoft</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Modison')">Modison</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Permanent Magnet')">Permanent Magnet</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Pix Transmission')">Pix Transmission</a>
-            <a href="javascript:void(0);" onclick="searchCompany('RACL Geartech')">RACL Geartech</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Sandur Manganese')">Sandur Manganese</a>
-            <a href="javascript:void(0);" onclick="searchCompany('Wanbury')">Wanbury</a>
-        </div>
+    <!-- Display error or success messages -->
+    {% if error %}
+        <p class="message error">{{ error }}</p>
+    {% endif %}
+
+    {% if success %}
+        <p class="message success">File downloaded successfully: {{ file_path }}</p>
+        <a href="/show_table">View Company List</a>
+    {% endif %}
+
+    <!-- Search form -->
+    <form id="search-form" class="search-form" action="/search" method="get">
+        <input type="text" id="company_name" name="company_name" placeholder="Search for a company..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Popular companies -->
+    <div class="popular-companies">
+        <h2>Example search:</h2>
+        <a href="javascript:void(0);" onclick="searchCompany('Coastal Corp')">Coastal Corp</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Google')">Google</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Amazon')">Amazon</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Microsoft')">Microsoft</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Modison')">Modison</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Permanent Magnet')">Permanent Magnet</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Pix Transmission')">Pix Transmission</a>
+        <a href="javascript:void(0);" onclick="searchCompany('RACL Geartech')">RACL Geartech</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Sandur Manganese')">Sandur Manganese</a>
+        <a href="javascript:void(0);" onclick="searchCompany('Wanbury')">Wanbury</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function searchCompany(companyName) {
+        document.getElementById('company_name').value = companyName;
+        document.getElementById('search-form').submit();
+    }
+</script>
+{% endblock %}

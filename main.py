@@ -16,7 +16,6 @@ from db_func import read_csv_file, create_or_connect_database, write_to_table,re
 from checker import check_excel_file
 import pandas as pd
 import sqlite3
-from xlsx2csv import Xlsx2csv
 
 company_name = ""
 

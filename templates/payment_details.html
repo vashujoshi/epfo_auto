@@ -1,35 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Payment Details</title>
-    {% load static %}   
-    <link rel="stylesheet" type="text/css" href="{% static 'table.css' %}">
-</head>
-<body>
-    <div class="container">
-        <h1>Payment Details</h1>
-        {% if data %}
-            <table border="1">
-                <thead>
-                    <tr>
-                        {% for column in columns %}
-                            <th>{{ column }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in data %}
-                        <tr>
-                            {% for item in row %}
-                                <td>{{ item }}</td>
-                            {% endfor %}
-                        </tr>
+{% extends "base.html" %}
+
+{% block title %}Payment Details{% endblock %}
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'table.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1>Payment Details</h1>
+{% if data %}
+    <table border="1">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+                <tr>
+                    {% for item in row %}
+                        <td>{{ item }}</td>
                     {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No payment details available.</p>
-        {% endif %}
-    </div>
-</body>
-</html>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No payment details available.</p>
+{% endif %}
+{% endblock %}

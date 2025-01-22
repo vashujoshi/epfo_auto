@@ -1,19 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Company Data</title>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'table.css' %}">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Company Data{% endblock %}
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'table.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
     <h1>Company Data</h1>
+
     <div id="scroll-buttons">
         <button id="scroll-to-bottom">Scroll to Bottom</button>
     </div>
+
+    <!-- Table Form -->
     <form method="post" action="/show_table">
         {% csrf_token %}
 
-        <table border="1">
+        <table class="data-table" border="1">
             <thead>
                 <tr>
                     <th>
@@ -37,30 +43,33 @@
                 {% endfor %}
             </tbody>
         </table>
+
         <button type="submit">Submit</button>
     </form>
 
-    <!-- Scroll Buttons -->
+
     <div id="scroll-buttons">
         <button id="scroll-to-top">Scroll to Top</button>
     </div>
+</div>
 
-    <script>
-        // Select All functionality
-        document.getElementById('select-all').addEventListener('change', function () {
-            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-        });
+{% endblock %}
 
-        // Scroll to Top functionality
-        document.getElementById('scroll-to-top').addEventListener('click', function () {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+{% block extra_js %}
+<script>
+    
+    document.getElementById('select-all').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
 
-        // Scroll to Bottom functionality
-        document.getElementById('scroll-to-bottom').addEventListener('click', function () {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        });
-    </script>
-</body>
-</html>
+   
+    document.getElementById('scroll-to-top').addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.getElementById('scroll-to-bottom').addEventListener('click', function () {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+</script>
+{% endblock %}

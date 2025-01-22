@@ -123,6 +123,19 @@ def search_and_download_excel(driver, company_name, download_dir):
         driver.find_element(By.NAME, "Search").click()
 
         try:
+            # Check if the error message "No details found for this criteria" is displayed
+            WebDriverWait(driver, 2).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="tablecontainer"]/div'))
+            )
+            error_message = driver.find_element(By.XPATH, '//*[@id="tablecontainer"]/div').text
+            print(f"Error1: {error_message}")
+            if "No details found for this criteria. Please enter valid Establishment name or code number ." in error_message:
+                print(f"Error2: {error_message}")
+                return "INVALID_COMPANY"
+        except TimeoutException:
+            pass  # Proceed only if no error message is found
+
+        try:
             WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, '//*[@id="example_wrapper"]/div[1]/a/span'))
             )
@@ -131,11 +144,10 @@ def search_and_download_excel(driver, company_name, download_dir):
             retry = False
         except TimeoutException:
             print("Invalid CAPTCHA or Excel button not clickable. Retrying...")
-    print(f"download_dir-{download_dir}")
-    print(f"file_name-{file_name}") 
+
     renamed_file = renameMostRecentFile(company_name.replace(' ', '_'), download_dir)
-    print(f"renamed_file-{renamed_file}")
     return renamed_file
+
 
 
     

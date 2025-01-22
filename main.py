@@ -10,6 +10,8 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from forms import CompanySearchForm
+
 
 from scrapper_final import epfs_scraper
 from db_func import read_csv_file, create_or_connect_database, write_to_table,read_csv_file2
@@ -69,54 +71,51 @@ def home(request):
 
 @app.route("/search")
 def search(request):
-    """Handle the search, scrape data, and store it in the database."""
-    if "company_name" not in request.GET:
-        return render(request, "home.html", {"error": "Please enter a company name.", "success": False})
+    form = CompanySearchForm(request.GET or None)
 
-    company_name = request.GET["company_name"].strip()
-    if not company_name:
-        return render(request, "home.html", {"error": "Company name cannot be empty.", "success": False})
+    if not form.is_valid():
+        return render(request, "home.html", {"form": form, "error": form.errors, "success": False})
 
+    company_name = form.cleaned_data["company_name"]
     download_dir = os.path.join(os.getcwd(), "CompanyList")
-    os.makedirs(download_dir, exist_ok=True)  # Ensure directory exists
+    os.makedirs(download_dir, exist_ok=True)
 
     driver = None
     try:
-        # Initialize the driver
         driver = setup_driver(download_dir)
-        
-        # Perform search and download
         file_path = search_and_download_excel(driver, company_name, download_dir)
-        try:
-            error_message_element = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, '//*//*[contains(text(), "No details found for this criteria. Please enter valid Establishment name or code number .")]'))
+
+        if file_path == "INVALID_COMPANY":
+            return render(
+                request,
+                "home.html",
+                {
+                    "form": form,
+                    "error": f"No details found for '{company_name}'. Please try a valid Establishment name or code number.",
+                    "success": False,
+                },
             )
-            if "No details found for this criteria" in error_message_element.text:
-                return render(request, "home.html", {
-                    "error": f"No details found for '{company_name}'. Please try again with a valid name.",
-                    "success": False
-                })
-        except TimeoutException:
-            pass  # No error message found, proceed
 
-        # Further processing
         if not file_path or not os.path.exists(file_path):
-            return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
+            raise FileNotFoundError("No valid CSV file found.")
 
+        # Process the file and write to the database
         df = read_csv_file(file_path)
-        if df is None or df.empty:
-            return render(request, "home.html", {"error": "No records found for the specified company.", "success": False})
+        if df.empty:
+            raise ValueError("No records found in the file.")
 
         conn = create_or_connect_database("company_pf_details.db")
         write_to_table(conn, df, "company_data")
         conn.close()
 
-        return render(request, "home.html", {"success": True, "show_table_link": True})
+        return render(request, "home.html", {"form": form, "success": True, "show_table_link": True})
+
     except Exception as e:
-        return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
+        return render(request, "home.html", {"form": form, "error": f"An error occurred: {e}", "success": False})
+
     finally:
         if driver:
-            driver.quit()  # Safely quit the driver
+            driver.quit()
 
 @app.route("/show_table")
 def show_table(request):

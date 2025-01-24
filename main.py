@@ -37,6 +37,7 @@ app = Django(
         'django.contrib.auth',
         'django.contrib.sessions',
         'django.contrib.messages',
+        
     ],
     TEMPLATES=[
         {
@@ -140,75 +141,54 @@ def search(request):
 
 @app.route("/show_table")
 def show_table(request):
-    """Display the table with checkboxes and handle form submissions."""
     if request.method == "POST":
-        selected_companies = request.GET.getlist("selected_companies")
-        selected_data = Company_Data.objects.filter(establishment_id=selected_companies)
+        selected_companies = request.POST.getlist("selected_companies")
+        selected_data = Company_Data.objects.filter(establishment_id__in=selected_companies)
         
         for data in selected_data:
+            # Scrape data for each selected company
             epfs_scraper().scrape_data(company_name=data.establishment_name, est_id=data.establishment_id, rename=True)
             time.sleep(5)
 
-        for data in selected_data:
-            company_name = data.establishment_name
+            company_name = data.establishment_name.replace(" ", "_")
             est_id = data.establishment_id
             download_dir2 = os.path.join(os.getcwd(), "data")
             os.makedirs(download_dir2, exist_ok=True)
+            file_path2 = os.path.join(download_dir2, f"{company_name}.xlsx")
 
-            driver = None
             try:
-                company_name=company_name.replace(" ","_")
-                file_path2 = f"data/{company_name}.xlsx"
                 check_excel_file(file_path2)
-                file_path2 = file_path2.replace(".xlsx",".csv")
-                print("here1")
-                print(file_path2)
+                file_path2 = file_path2.replace(".xlsx", ".csv")
+                file_path2=data.establishment_name+".csv"
                 df2 = read_csv_file2(file_path2, company_name)
-                print(df2.head())
-                if df2 is None:
-                    return render(request, "home.html", {"error": "No records available for the organization ", "success": False})
-                # cant read
-                print("workbook", df2.head())
-                print("here2")
-                # Step 2: Ensure the file exists or fetch the latest one
-                if not os.path.exists(file_path2):
-                    file_path2 = get_latest_file(download_dir2, "*.csv")
-                    if not file_path2:
-                        return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
-
-                # Step 3: Read the downloaded CSV file
-                if df2 is None:
-
-                    return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
-
-                # Step 4: Write the data to the database
-                print(df2.head())
+                print("this is the payment_data->",df2.head())
+                if not df2:
+                    return render(request, "home.html", {"error": f"No records available for {data.establishment_name}.", "success": False})
+                
                 write_to_payment_detail(df2, Payment_Detail)
 
-                # Remove the file after saving to the database
+                # Clean up downloaded files
                 if os.path.exists(file_path2):
                     os.remove(file_path2)
-                    print(f"Removed file: {file_path2}")
                 xlsx_file_path = file_path2.replace(".csv", ".xlsx")
                 if os.path.exists(xlsx_file_path):
                     os.remove(xlsx_file_path)
-                    print(f"Removed file: {xlsx_file_path}")
-
+            
             except Exception as e:
                 return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
-            finally:
-                if driver:
-                    driver.quit()  # Safely quit the driver
         
         return redirect("/payment_details")
 
-    data=Company_Data.objects.all()
-    
-    data_list=list(data.values())
-    columns=[field.name for field in Company_Data._meta.fields]
+    # GET method: Fetch all companies and render the table
+    data = Company_Data.objects.all()
+    columns = [field.name for field in Company_Data._meta.fields]
+    data_list = [[getattr(row, col) for col in columns] for row in data]
 
-   
+
     return render(request, "show_table.html", {"data": data_list, "columns": columns})
+
+
+
 
 @app.route("/payment_details")
 def payment_details(request):

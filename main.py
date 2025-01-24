@@ -11,10 +11,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from forms import CompanySearchForm
+from django.db import models
 
 
 from scrapper_final import epfs_scraper
-from db_func import read_csv_file, create_or_connect_database, write_to_table,read_csv_file2
+from db_func import read_csv_file, write_to_company_data, write_to_payment_detail, read_csv_file2
 from checker import check_excel_file
 import pandas as pd
 import sqlite3
@@ -65,6 +66,23 @@ def get_latest_file(directory, extension="*.csv"):
         return None
     return max(files, key=os.path.getmtime)
 
+@app.admin
+class Company_Data(models.Model):
+    establishment_id = models.CharField(max_length=100, primary_key=True)
+    establishment_name = models.CharField(max_length=255)
+    address = models.TextField()
+    office_name = models.CharField(max_length=100)
+
+@app.admin
+class Payment_Detail(models.Model):
+    company_name = models.CharField(max_length=255)
+    trrn = models.BigIntegerField()
+    date_of_credit = models.DateTimeField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    wage_month = models.CharField(max_length=50)
+    no_of_employee = models.IntegerField()
+    ecr = models.CharField(max_length=10)
+
 @app.route("/")
 def home(request):
     return render(request, 'home.html')
@@ -103,10 +121,13 @@ def search(request):
         df = read_csv_file(file_path)
         if df.empty:
             raise ValueError("No records found in the file.")
+        print("this is the data->",df.head())
+        write_to_company_data(df, Company_Data)
+        print("this is the data2->",df.head())
 
-        conn = create_or_connect_database("company_pf_details.db")
-        write_to_table(conn, df, "company_data")
-        conn.close()
+        data = Company_Data.objects.all()
+        print("data--?:",data) # This will print a queryset of the rows
+        
 
         return render(request, "home.html", {"form": form, "success": True, "show_table_link": True})
 
@@ -121,28 +142,18 @@ def search(request):
 def show_table(request):
     """Display the table with checkboxes and handle form submissions."""
     if request.method == "POST":
-        selected_companies = request.POST.getlist("selected_companies")
-        selected_data = []
-        conn = create_or_connect_database("company_pf_details.db")
-        print("selected_companies", selected_companies)
-        cursor = conn.cursor()
-        for est_id in selected_companies:
-            cursor.execute("SELECT establishment_name FROM company_data WHERE establishment_id=?", (est_id,))
-            est_name = cursor.fetchone()[0]
-            selected_data.append({"establishment_id": est_id, "establishment_name": est_name})
-        conn.close()
+        selected_companies = request.GET.getlist("selected_companies")
+        selected_data = Company_Data.objects.filter(establishment_id=selected_companies)
         
-        # Pass the selected companies to the final scraper
         for data in selected_data:
-            epfs_scraper().scrape_data(company_name=data["establishment_name"], est_id=data["establishment_id"], rename=True)
+            epfs_scraper().scrape_data(company_name=data.establishment_name, est_id=data.establishment_id, rename=True)
             time.sleep(5)
-        print("here0")
-        # Save to backend and create a new table with the name of payment_detail
+
         for data in selected_data:
-            company_name = data["establishment_name"]
-            est_id = data["establishment_id"]
+            company_name = data.establishment_name
+            est_id = data.establishment_id
             download_dir2 = os.path.join(os.getcwd(), "data")
-            os.makedirs(download_dir2, exist_ok=True)  # Ensure directory exists
+            os.makedirs(download_dir2, exist_ok=True)
 
             driver = None
             try:
@@ -153,6 +164,7 @@ def show_table(request):
                 print("here1")
                 print(file_path2)
                 df2 = read_csv_file2(file_path2, company_name)
+                print(df2.head())
                 if df2 is None:
                     return render(request, "home.html", {"error": "No records available for the organization ", "success": False})
                 # cant read
@@ -166,18 +178,14 @@ def show_table(request):
 
                 # Step 3: Read the downloaded CSV file
                 if df2 is None:
+
                     return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
 
-                # Step 4: Connect to the SQLite database
-                conn = create_or_connect_database("company_pf_details.db")
-                if conn is None:
-                    return render(request, "home.html", {"error": "Database connection failed.", "success": False})
+                # Step 4: Write the data to the database
+                print(df2.head())
+                write_to_payment_detail(df2, Payment_Detail)
 
-                # Step 5: Write the data to the database
-                write_to_table(conn, df2, "payment_detail")
-
-                # Close the database connection
-                conn.close()
+                # Remove the file after saving to the database
                 if os.path.exists(file_path2):
                     os.remove(file_path2)
                     print(f"Removed file: {file_path2}")
@@ -194,29 +202,23 @@ def show_table(request):
         
         return redirect("/payment_details")
 
-    # Read the DataFrame from `company_data` table
-    conn = create_or_connect_database("company_pf_details.db")
-    df = pd.read_sql_query("SELECT * FROM company_data", conn)
-    conn.close()
+    data=Company_Data.objects.all()
+    
+    data_list=list(data.values())
+    columns=[field.name for field in Company_Data._meta.fields]
 
-    # Convert DataFrame rows to a list of lists and column names to a list
-    data = df.values.tolist()  # Each row as a list
-    columns = df.columns.tolist()  # List of column names
-
-    return render(request, "show_table.html", {"data": data, "columns": columns})
+   
+    return render(request, "show_table.html", {"data": data_list, "columns": columns})
 
 @app.route("/payment_details")
 def payment_details(request):
     """Display the payment details."""
-    conn = create_or_connect_database("company_pf_details.db")
-    df = pd.read_sql_query("SELECT * FROM payment_detail", conn)
-    conn.close()
+    data=Payment_Detail.objects.all()
 
-    # Convert DataFrame rows to a list of lists and column names to a list
-    data = df.values.tolist()  # Each row as a list
-    columns = df.columns.tolist()  # List of column names
+    data_list=list(data.values())
+    columns=[field.name for field in Payment_Detail._meta.fields]
 
-    return render(request, "payment_details.html", {"data": data, "columns": columns})
+    return render(request, "payment_details.html", {"data": data_list, "columns": columns})
 
 if __name__ == "__main__":
   webbrowser.open("http://localhost:8004")

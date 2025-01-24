@@ -1,7 +1,6 @@
 import pandas as pd
 import sqlite3
 
-# Step 1: Read the CSV file into a pandas DataFrame
 def read_csv_file(file_path):
     try:
         df = pd.read_csv(file_path)
@@ -17,23 +16,18 @@ def read_csv_file(file_path):
         print(f"Error reading CSV file: {e}")
         return None
 
-# Step 2: Create or connect to an SQLite database
-def create_or_connect_database(db_name="example.db"):
+def write_to_company_data(df, Company_Data):
     try:
-        conn = sqlite3.connect(db_name)
-        print("Connected to SQLite database.")
-        return conn
+        for _, row in df.iterrows():
+           Company_Data.objects.create(
+                establishment_id=row['establishment_id'],
+                establishment_name=row['establishment_name'],
+                address=row['address'],
+                office_name=row['office_name']
+           )
+        print("Data written to 'company_data' table successfully.")
     except Exception as e:
-        print(f"Error connecting to SQLite database: {e}")
-        return None
-
-# Step 3: Write the DataFrame to the SQLite table
-def write_to_table(conn, df, table_name):
-    try:
-        df.to_sql(table_name, conn, if_exists='append', index=False)
-        print(f"Data written to table '{table_name}' successfully.")
-    except Exception as e:
-        print(f"Error writing to table: {e}")
+        print(f"Error writing to 'company_data' table: {e}")
 
 def read_csv_file2(file_path, company_name):
     try:
@@ -45,3 +39,20 @@ def read_csv_file2(file_path, company_name):
     except Exception as e:
         print(f"Error reading CSV file: {e}")
         return None
+
+def write_to_payment_detail(df, Payment_Detail):
+    try:
+        for _, row in df.iterrows():
+            Payment_Detail.objects.create(
+                company_name=row['Company_Name'],
+                trrn=row['TRRN'],
+                date_of_credit=row['Date Of Credit'],
+                amount=row['Amount'],
+                wage_month=row['Wage Month'],
+                no_of_employee=row['No. of Employee'],
+                ecr=row['ECR']
+            )
+        print("Data written to 'payment_detail' table successfully.")
+    except Exception as e:
+        print(f"Error writing to 'payment_detail' table: {e}")
+

@@ -20,12 +20,12 @@
         </thead>
         <tbody>
             {% for row in data %}
-                <tr>
-                    {% for item in row %}
-                        <td>{{ item }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
+            <tr>
+                {% for value in row %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
 {% else %}

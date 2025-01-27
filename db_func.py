@@ -1,20 +1,44 @@
+import csv
 import pandas as pd
 import sqlite3
 
+# def read_csv_file(file_path):
+#     try:
+#         df = pd.read_csv(file_path)
+        
+#         # Drop the 'Action' column if it exists
+#         df = df.drop(columns=['Action'], errors='ignore')  # 'errors' parameter prevents error if column does not exist
+        
+#         # Rename the columns
+#         df.columns = ['establishment_id', 'establishment_name', 'address', 'office_name']  # Adjust if necessary
+        
+#         return df
+#     except Exception as e:
+#         print(f"Error reading CSV file: {e}")
+#         return None
 def read_csv_file(file_path):
     try:
-        df = pd.read_csv(file_path)
-        
-        # Drop the 'Action' column if it exists
-        df = df.drop(columns=['Action'], errors='ignore')  # 'errors' parameter prevents error if column does not exist
-        
-        # Rename the columns
-        df.columns = ['establishment_id', 'establishment_name', 'address', 'office_name']  # Adjust if necessary
-        
-        return df
+        with open(file_path, mode='r') as file:
+            reader = csv.DictReader(file)
+            # check
+            print(f"Column names in CSV: {reader.fieldnames}")  
+
+            # csv col to keys ma krdiya
+            records = []
+            for row in reader:
+                row.pop('Action', None)  # Remove 'Action' column if present
+                records.append({
+                    'establishment_id': row['Establishment ID'],
+                    'establishment_name': row['Establishment Name'],
+                    'address': row['Address'],
+                    'office_name': row['Office Name']
+                })
+            return records
     except Exception as e:
         print(f"Error reading CSV file: {e}")
-        return None
+        return []
+
+
 
 def write_to_company_data(df, Company_Data):
     try:
@@ -42,6 +66,9 @@ def read_csv_file2(file_path, company_name):
 
 def write_to_payment_detail(df, Payment_Detail):
     try:
+        # Convert the date format to the expected format
+        df['Date Of Credit'] = pd.to_datetime(df['Date Of Credit'], format='%d-%b-%Y %H:%M:%S').dt.strftime('%Y-%m-%d %H:%M:%S')
+        
         for _, row in df.iterrows():
             Payment_Detail.objects.create(
                 company_name=row['Company_Name'],
@@ -55,4 +82,3 @@ def write_to_payment_detail(df, Payment_Detail):
         print("Data written to 'payment_detail' table successfully.")
     except Exception as e:
         print(f"Error writing to 'payment_detail' table: {e}")
-

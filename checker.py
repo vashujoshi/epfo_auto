@@ -5,6 +5,8 @@ def check_excel_file(file_path):
     try:
         # Try to read the Excel file using openpyxl
         df = pd.read_excel(file_path, engine='openpyxl')
+        if(df.head().empty):
+            return "No records available for the company."
         print("File loaded successfully using openyxl!")
         print("Preview of the file:")
         print(df.head())

@@ -6,14 +6,9 @@ from django.shortcuts import render, redirect
 from nanodjango import Django
 import pandas as pd
 from scrapper import setup_driver, search_and_download_excel
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from forms import CompanySearchForm
 from django.db import models
-
-
 from scrapper_final import epfs_scraper
 from db_func import read_csv_file, write_to_company_data, write_to_payment_detail, read_csv_file2
 from checker import check_excel_file
@@ -115,9 +110,6 @@ def search(request):
                 },
             )
 
-        if not file_path or not os.path.exists(file_path):
-            raise FileNotFoundError("No valid CSV file found.")
-
         records = read_csv_file(file_path)
         if not records:
             raise ValueError("No records found in the file.")
@@ -144,8 +136,6 @@ def show_table(request):
             epfs_scraper().scrape_data(company_name=data.establishment_name, est_id=data.establishment_id, rename=True)
             time.sleep(5)
 
-            print("here 1")
-
             company_name = data.establishment_name
             est_id = data.establishment_id
             download_dir2 = os.path.join(os.getcwd(), "data")
@@ -158,27 +148,26 @@ def show_table(request):
                 file_path2 = f"data/{company_name}.xlsx"
                 check_excel_file(file_path2)
                 file_path2 = file_path2.replace(".xlsx",".csv")
-                print("here1")
+                
                 print(file_path2)
                 df2 = read_csv_file2(file_path2, company_name)
-                print(df2.head())
                 if df2 is None:
                     return render(request, "home.html", {"error": "No records available for the organization ", "success": False})
                 # cant read
                 print("workbook", df2.head())
-                print("here2")
-                # Step 2: Ensure the file exists or fetch the latest one
+                
+              
                 if not os.path.exists(file_path2):
                     file_path2 = get_latest_file(download_dir2, "*.csv")
                     if not file_path2:
                         return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
 
-                # Step 3: Read the downloaded CSV file
+                
                 if df2 is None:
 
                     return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
 
-                # Step 4: Write the data to the database
+             
                 print(df2.head())
                 write_to_payment_detail(df2, Payment_Detail)
 
@@ -195,12 +184,12 @@ def show_table(request):
                 return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
             finally:
                 if driver:
-                    driver.quit()  # Safely quit the driver
+                    driver.quit()
         
         return redirect("/payment_details")
         
 
-    # GET method: fetch all companies and render the table 
+    # fetch all companies and render the table 
     data = Company_Data.objects.all()
     columns = [field.name for field in Company_Data._meta.fields]
     data_list = [[getattr(row, col) for col in columns] for row in data]

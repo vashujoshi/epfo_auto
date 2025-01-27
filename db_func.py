@@ -2,20 +2,6 @@ import csv
 import pandas as pd
 import sqlite3
 
-# def read_csv_file(file_path):
-#     try:
-#         df = pd.read_csv(file_path)
-        
-#         # Drop the 'Action' column if it exists
-#         df = df.drop(columns=['Action'], errors='ignore')  # 'errors' parameter prevents error if column does not exist
-        
-#         # Rename the columns
-#         df.columns = ['establishment_id', 'establishment_name', 'address', 'office_name']  # Adjust if necessary
-        
-#         return df
-#     except Exception as e:
-#         print(f"Error reading CSV file: {e}")
-#         return None
 def read_csv_file(file_path):
     try:
         with open(file_path, mode='r') as file:
@@ -26,7 +12,7 @@ def read_csv_file(file_path):
             # csv col to keys ma krdiya
             records = []
             for row in reader:
-                row.pop('Action', None)  # Remove 'Action' column if present
+                row.pop('Action', None) 
                 records.append({
                     'establishment_id': row['Establishment ID'],
                     'establishment_name': row['Establishment Name'],
@@ -53,6 +39,7 @@ def write_to_company_data(records, Company_Data):
         print(f"Error writing to 'company_data' table: {e}")
 
         
+
 def read_csv_file2(file_path, company_name):
     try:
         file_path = file_path.replace(" ","\ ")
@@ -63,10 +50,11 @@ def read_csv_file2(file_path, company_name):
     except Exception as e:
         print(f"Error reading CSV file: {e}")
         return None
-
+    
+    
 def write_to_payment_detail(df, Payment_Detail):
     try:
-        # Convert the date format to the expected format
+
         df['Date Of Credit'] = pd.to_datetime(df['Date Of Credit'], format='%d-%b-%Y %H:%M:%S').dt.strftime('%Y-%m-%d %H:%M:%S')
         
         for _, row in df.iterrows():

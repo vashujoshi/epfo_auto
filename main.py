@@ -122,13 +122,7 @@ def search(request):
         if not records:
             raise ValueError("No records found in the file.")
         
-        for record in records:
-            Company_Data.objects.create(
-                establishment_id=record['establishment_id'],
-                establishment_name=record['establishment_name'],
-                address=record['address'],
-                office_name=record['office_name']
-            )
+        write_to_company_data(records, Company_Data)
 
         return render(request, "home.html", {"form": form, "success": True, "show_table_link": True})
 
@@ -224,5 +218,5 @@ def payment_details(request):
     return render(request, "payment_details.html", {"data": data_list, "columns": columns})
 
 if __name__ == "__main__":
-  webbrowser.open("http://localhost:8004")
+#   webbrowser.open("http://localhost:8004")
   app.run(host="0.0.0.0:8004")

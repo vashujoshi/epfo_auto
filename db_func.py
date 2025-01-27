@@ -39,20 +39,20 @@ def read_csv_file(file_path):
         return []
 
 
-
-def write_to_company_data(df, Company_Data):
+def write_to_company_data(records, Company_Data):
     try:
-        for _, row in df.iterrows():
-           Company_Data.objects.create(
-                establishment_id=row['establishment_id'],
-                establishment_name=row['establishment_name'],
-                address=row['address'],
-                office_name=row['office_name']
-           )
+        for record in records:
+            Company_Data.objects.create(
+                establishment_id=record['establishment_id'],
+                establishment_name=record['establishment_name'],
+                address=record['address'],
+                office_name=record['office_name']
+            )
         print("Data written to 'company_data' table successfully.")
     except Exception as e:
         print(f"Error writing to 'company_data' table: {e}")
 
+        
 def read_csv_file2(file_path, company_name):
     try:
         file_path = file_path.replace(" ","\ ")

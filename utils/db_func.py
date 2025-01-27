@@ -51,7 +51,7 @@ def read_csv_file2(file_path, company_name):
         print(f"Error reading CSV file: {e}")
         return None
     
-    
+
 def write_to_payment_detail(df, Payment_Detail):
     try:
 
@@ -70,3 +70,5 @@ def write_to_payment_detail(df, Payment_Detail):
         print("Data written to 'payment_detail' table successfully.")
     except Exception as e:
         print(f"Error writing to 'payment_detail' table: {e}")
+
+        

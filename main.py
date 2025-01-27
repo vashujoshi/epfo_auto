@@ -5,13 +5,13 @@ import webbrowser
 from django.shortcuts import render, redirect
 from nanodjango import Django
 import pandas as pd
-from scrapper import setup_driver, search_and_download_excel
+from utils.scrapper import setup_driver, search_and_download_excel
 from selenium.webdriver.support import expected_conditions as EC
-from forms import CompanySearchForm
+from utils.forms import CompanySearchForm
 from django.db import models
-from scrapper_final import epfs_scraper
-from db_func import read_csv_file, write_to_company_data, write_to_payment_detail, read_csv_file2
-from checker import check_excel_file
+from utils.scrapper_final import epfs_scraper
+from utils.db_func import read_csv_file, write_to_company_data, write_to_payment_detail, read_csv_file2
+from utils.checker import check_excel_file
 import pandas as pd
 import sqlite3
 
@@ -61,6 +61,15 @@ def get_latest_file(directory, extension="*.csv"):
     if not files:
         return None
     return max(files, key=os.path.getmtime)
+
+def remove_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"Removed file: {file_path}")
+    xlsx_file_path = file_path.replace(".csv", ".xlsx")
+    if os.path.exists(xlsx_file_path):
+        os.remove(xlsx_file_path)
+        print(f"Removed file: {xlsx_file_path}")
 
 @app.admin
 class Company_Data(models.Model):
@@ -154,31 +163,19 @@ def show_table(request):
                 if df2 is None:
                     return render(request, "home.html", {"error": "No records available for the organization ", "success": False})
                 # cant read
-                print("workbook", df2.head())
+                # print("workbook", df2.head())
                 
               
                 if not os.path.exists(file_path2):
                     file_path2 = get_latest_file(download_dir2, "*.csv")
                     if not file_path2:
                         return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
-
-                
-                if df2 is None:
-
-                    return render(request, "home.html", {"error": "Failed to read the downloaded CSV file.", "success": False})
-
              
                 print(df2.head())
                 write_to_payment_detail(df2, Payment_Detail)
 
                 # Remove the file after saving to the database
-                if os.path.exists(file_path2):
-                    os.remove(file_path2)
-                    print(f"Removed file: {file_path2}")
-                xlsx_file_path = file_path2.replace(".csv", ".xlsx")
-                if os.path.exists(xlsx_file_path):
-                    os.remove(xlsx_file_path)
-                    print(f"Removed file: {xlsx_file_path}")
+                remove_file(file_path2)
 
             except Exception as e:
                 return render(request, "home.html", {"error": f"An error occurred: {e}", "success": False})
@@ -207,5 +204,5 @@ def payment_details(request):
     return render(request, "payment_details.html", {"data": data_list, "columns": columns})
 
 if __name__ == "__main__":
-#   webbrowser.open("http://localhost:8004")
+  webbrowser.open("http://localhost:8004")
   app.run(host="0.0.0.0:8004")

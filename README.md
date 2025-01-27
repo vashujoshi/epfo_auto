@@ -74,142 +74,111 @@ This project is a web application for managing company PF (Provident Fund) detai
 - **CSV and Excel Handling**: Process and validate CSV/Excel files for data storage.
 
 ---
+# Company PF Details Manager
 
-## Project Structure
+A Django-based web application for managing and tracking company Provident Fund (PF) details and payment information.
 
+## Features
 
-```
-📂 Project Root
-├── templates/          # HTML templates
-├── static/             # Static files (CSS, JS, images)
-├── CompanyList/        # Directory for downloaded files
-├── data/               # Directory for processed data
-├── db_func.py          # Database operations
-├── scrapper.py         # Web scraping utilities
-├── scrapper_final.py   # Finalized scraping logic
-├── checker.py          # Excel validation utilities
-├── views.py            # Django views
-├── requirements.txt    # Python dependencies
-└── app.py              # Entry point of the application
-```
+- Search and retrieve company PF details
+- Automated data scraping from EPFS portal
+- Store and display company information
+- Track payment details including TRRN, credit dates, and employee counts
+- Export data to Excel/CSV formats
+- Interactive data tables with sorting and filtering capabilities
 
----
+## Prerequisites
 
-
-## Technologies Used
-
-- **Backend**: Django, NanoDjango, SQLite
-- **Frontend**: HTML, CSS, Django Templates
-- **Web Scraping**: Selenium, pandas
-- **Libraries**: 
-  - `pandas` for data processing
-  - `selenium` for scraping
-  - `xlsx2csv` for Excel to CSV conversion
-
----
+- Python 3.x
+- Django
+- Selenium WebDriver
+- Pandas
+- SQLite3
 
 ## Installation
 
-### Prerequisites
-1. Python 3.9+ installed on your system.
-2. A modern web browser (e.g., Chrome).
-3. ChromeDriver for Selenium (ensure it matches your Chrome version).
-
-### Steps
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/company-pf-details.git
-   cd company-pf-details
-   ```
+```bash
+git clone https://github.com/your-username/company-pf-details.git
+cd company-pf-details
+```
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-3. Set up directories:
-   ```bash
-   mkdir CompanyList data
-   ```
+3. Install required packages:
+```bash
+pip install -r requirements.txt
+```
 
-4. Run the application:
-   ```bash
-   python app.py
-   ```
-   The app will automatically open in your default browser at `http://localhost:8004`.
+4. Set up the database:
+```bash
+python manage.py migrate
+```
 
----
+## Project Structure
+
+```
+├── CompanyList/          # Directory for downloaded company data
+├── data/                 # Directory for processed data files
+├── static/              # Static files (CSS, JS)
+├── templates/           # HTML templates
+│   ├── base.html
+│   ├── home.html
+│   ├── show_table.html
+│   └── payment_details.html
+├── utils/               # Utility functions
+│   ├── checker.py
+│   ├── db_func.py
+│   ├── forms.py
+│   ├── scrapper.py
+│   └── scrapper_final.py
+└── main.py             # Main application file
+```
 
 ## Usage
 
-1. Navigate to the homepage.
-2. Enter the company name in the search bar and hit "Search."
-3. View and select the desired company from the results table.
-4. Scrape payment details for selected companies and view them on the payment details page.
+1. Start the development server:
+```bash
+python main.py
+```
 
----
+2. Open your web browser and navigate to `http://localhost:8004`
 
-## API Reference
+3. Use the search form to look up company details
 
-### `/`
-- **Method**: GET
-- **Description**: Renders the homepage.
+4. Select companies from the table to fetch their payment details
 
-### `/search`
-- **Method**: GET
-- **Description**: Handles search requests, scrapes data, and stores it in the database.
+5. View and manage payment information in the payment details section
 
-### `/show_table`
-- **Method**: GET, POST
-- **Description**: Displays the table of company data. Accepts selections for further scraping.
+## Models
 
-### `/payment_details`
-- **Method**: GET
-- **Description**: Displays the payment details table.
+### Company_Data
+- establishment_id (Primary Key)
+- establishment_name
+- address
+- office_name
 
----
+### Payment_Detail
+- company_name
+- trrn
+- date_of_credit
+- amount
+- wage_month
+- no_of_employee
+- ecr
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature-branch
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Description of changes"
-   ```
-4. Push to the branch:
-   ```bash
-   git push origin feature-branch
-   ```
-5. Create a pull request.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
----
+## License
 
-## Troubleshooting
-
-- **Selenium WebDriver Errors**:
-  - Ensure `chromedriver` is in your `PATH`.
-  - Update `chromedriver` to match your browser version.
-
-- **Database Issues**:
-  - Ensure `company_pf_details.db` is writable.
-  - Check for missing tables in SQLite.
-
-- **File Not Found Errors**:
-  - Ensure directories (`CompanyList`, `data`) are created and accessible.
-
-
----
-
-## Contact
-
-For any issues or suggestions, feel free to reach out:
-
-- **Author**: Vaibhav joshi
-- **Email**: vashu941130@gmail.com
-```
-.
+This project is licensed under the MIT License - see the LICENSE file for details.

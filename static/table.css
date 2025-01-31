@@ -13,11 +13,24 @@ h1 {
     margin-bottom: 10px;
 }
 
+/* Container styling */
+.container {
+    max-width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 /* Table styling */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin: 20px 0;
     font-size: 14px;
+    text-align: left;
 }
 
 thead {
@@ -44,6 +57,14 @@ tbody tr:nth-child(odd) {
 
 tbody tr:nth-child(even) {
     background-color: #fff;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
 }
 
 /* Column-specific styling */
@@ -88,14 +109,10 @@ button[type="submit"]:hover {
 
 /* Scroll buttons container */
 #scroll-buttons {
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
+    text-align: center;
+    margin: 10px 0;
 }
 
-/* Top button */
 #scroll-buttons button:first-child {
     margin-bottom: 20px; /* Space between top and bottom button */
 }
@@ -106,12 +123,14 @@ button[type="submit"]:hover {
 }
 
 #scroll-buttons button {
-    padding: 10px 15px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
     background-color: #007bff;
     color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -119,7 +138,11 @@ button[type="submit"]:hover {
     background-color: #0056b3;
 }
 
-
+/* Checkbox styling */
+input[type="checkbox"] {
+    transform: scale(1.2);
+    margin-right: 5px;
+}
 
 #scroll-to-bottom {
     padding: 10px 15px;

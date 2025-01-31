@@ -165,13 +165,7 @@ def show_table(request):
                 # cant read
                 # print("workbook", df2.head())
                 
-              
-                if not os.path.exists(file_path2):
-                    file_path2 = get_latest_file(download_dir2, "*.csv")
-                    if not file_path2:
-                        return render(request, "home.html", {"error": "No valid CSV file found.", "success": False})
-             
-                print(df2.head())
+                # print(df2.head())
                 write_to_payment_detail(df2, Payment_Detail)
 
                 # Remove the file after saving to the database

@@ -160,16 +160,13 @@ def show_table(request):
                 
                 print(file_path2)
                 records = read_csv_file2(file_path2, company_name)
-                write_to_payment_detail(records, Payment_Detail)
 
+                # cant read
                 if records is None:
                     return render(request, "home.html", {"error": "No records available for the organization ", "success": False})
-                # cant read
+                write_to_payment_detail(records, Payment_Detail)
                 # print("workbook", df2.head())
                 
-                # print(df2.head())
-                # write_to_payment_detail(df2, Payment_Detail)
-
                 # Remove the file after saving to the database
                 remove_file(file_path2)
 

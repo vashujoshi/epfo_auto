@@ -159,14 +159,16 @@ def show_table(request):
                 file_path2 = file_path2.replace(".xlsx",".csv")
                 
                 print(file_path2)
-                df2 = read_csv_file2(file_path2, company_name)
-                if df2 is None:
+                records = read_csv_file2(file_path2, company_name)
+                write_to_payment_detail(records, Payment_Detail)
+
+                if records is None:
                     return render(request, "home.html", {"error": "No records available for the organization ", "success": False})
                 # cant read
                 # print("workbook", df2.head())
                 
                 # print(df2.head())
-                write_to_payment_detail(df2, Payment_Detail)
+                # write_to_payment_detail(df2, Payment_Detail)
 
                 # Remove the file after saving to the database
                 remove_file(file_path2)
@@ -198,5 +200,5 @@ def payment_details(request):
     return render(request, "payment_details.html", {"data": data_list, "columns": columns})
 
 if __name__ == "__main__":
-  webbrowser.open("http://localhost:8004")
+#   webbrowser.open("http://localhost:8004")
   app.run(host="0.0.0.0:8004")

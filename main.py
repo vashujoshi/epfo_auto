@@ -197,5 +197,5 @@ def payment_details(request):
     return render(request, "payment_details.html", {"data": data_list, "columns": columns})
 
 if __name__ == "__main__":
-#   webbrowser.open("http://localhost:8004")
+  webbrowser.open("http://localhost:8004")
   app.run(host="0.0.0.0:8004")
